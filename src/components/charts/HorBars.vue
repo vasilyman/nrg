@@ -39,10 +39,10 @@
   </div>
 </template>
 <script>
-import { Bar, mixins } from 'vue-chartjs'
+import { HorizontalBar, mixins } from 'vue-chartjs'
 
 export default {
-  extends: Bar,
+  extends: HorizontalBar,
   mixins: [mixins.reactiveProp],
   props: {
     options: Object,

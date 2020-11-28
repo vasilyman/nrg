@@ -3,5 +3,19 @@
 @import '~vuetify/src/styles/main.sass';
 
 .shadow-primary {
-  box-shadow: 0 0 2rem rgba($color: $primary, $alpha: .2);
+  box-shadow: 0 .5rem 1rem rgba($color: $primary, $alpha: .2)!important;
+}
+
+.border-primary {
+  border-width: 2px!important;
+  border-style: solid!important;
+  border-color: $primary!important;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.main-bg {
+  background-color: #F6FCFF;
 }

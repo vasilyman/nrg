@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="6">
         <Donuts
-          ref="line"
+          ref="donuts"
           style="position:relative;"
           :options="options"
           :chartData="chartData"

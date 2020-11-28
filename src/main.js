@@ -26,6 +26,8 @@ const axiosInstance = axios.create({
   // },
 })
 
+moment.locale('ru')
+
 // prototype section
 Vue.prototype.$lodash = {
   merge

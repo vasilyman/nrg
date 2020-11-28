@@ -11,28 +11,27 @@
           class=""
         />
       </v-col>
-      <v-col cols="12" sm="3">
-        <div class="">
-          <div class="title">Filter 1</div>
-          <v-checkbox
-            label="Label 1"
-          ></v-checkbox>
-          <v-btn block color="primary" outlined>
-            <v-icon
-              left
-              dark
-            >
-              mdi-tune
-            </v-icon>
-            Apply
-          </v-btn>
-        </div>
+      <v-col cols="12" sm="3" class="d-flex flex-column justify-start">
+        <div class="title">Показать/скрыть</div>
+        <v-checkbox
+          label="Label 1"
+        ></v-checkbox>
+        <v-btn color="primary" outlined>
+          <v-icon
+            left
+            dark
+          >
+            mdi-tune
+          </v-icon>
+          Изменить
+        </v-btn>
       </v-col>
     </v-row>
   </div>
 </template>
 <script>
 import Lines from '@/components/charts/Lines.vue'
+import { mapState } from 'vuex'
 
 export default {
   components: {
@@ -40,6 +39,17 @@ export default {
   },
   props: {
     method: Number
+  },
+  watch: {
+    filters: {
+      immediate: true,
+      deep: true,
+      handler (val, old) {
+        if (!old || val.dateStart !== old.dateStart || val.dateEnd !== old.dateEnd) {
+          this.getData()
+        }
+      }
+    }
   },
   data () {
     return {
@@ -60,10 +70,12 @@ export default {
             }
           ]
         }
-      }
+      },
+      step: null
     }
   },
   computed: {
+    ...mapState(['filters']),
     chartData () {
       return {
         labels: this.apiData.map((el) => el.date),
@@ -80,11 +92,17 @@ export default {
       }
     }
   },
-  mounted () {
-    this.getData()
-  },
   methods: {
-    getData () {
+    async getData () {
+      const url = `${process.env.VUE_APP_API_SERVER}/api/data/getprediction`
+      const params = {
+        startDate: this.filters.dateStart,
+        endDate: this.filters.dateEnd,
+        step: this.step
+      }
+      const res = await this.$axios.get(url, { params })
+      console.log(res)
+
       // load dummy data
       this.apiData = [...Array(12)].map((v, i) => ({
         date: `01-${(0 + (i + 1).toString()).slice(-2)}-2020`,
