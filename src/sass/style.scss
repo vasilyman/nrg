@@ -1,0 +1,7 @@
+@import './transitions.scss';
+@import './variables.scss';
+@import '~vuetify/src/styles/main.sass';
+
+.shadow-primary {
+  box-shadow: 0 0 2rem rgba($color: $primary, $alpha: .2);
+}
