@@ -2,9 +2,9 @@
   <div class="secondary lighten-5 fill-height">
     <v-container>
       <v-row>
-        <v-col cols="9">
+        <v-col cols="12" sm="9">
           <v-row>
-            <v-col cols="4" v-for="(item, i) in Array(2)" :key="i" >
+            <v-col cols="12" sm="4" v-for="(item, i) in Array(2)" :key="i" >
               <div class="white pa-3 rounded-lg shadow shadow-primary">
                 <v-text-field
                   label="Input"
@@ -39,7 +39,7 @@
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="3">
+        <v-col cols="12" sm="3">
           <div class="text-h4 font-weight-bold mb-6">
             Сегодня
             <span class="primary--text">31.11.2021</span>

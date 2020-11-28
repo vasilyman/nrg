@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="9">
+      <v-col cols="12" sm="9">
         <Lines
           ref="line"
           style="position:relative;"
@@ -11,7 +11,7 @@
           class=""
         />
       </v-col>
-      <v-col cols="3">
+      <v-col cols="12" sm="3">
         <div class="">
           <div class="title">Filter 1</div>
           <v-checkbox
