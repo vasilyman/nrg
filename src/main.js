@@ -14,6 +14,10 @@ import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
 import '@/sass/style.scss'
 
+// project global components imports
+import LineDiagram from '@/components/diagrams/LineDiagram.vue'
+import FilterGroupSelect from '@/components/FilterGroupSelect.vue'
+
 Vue.config.productionTip = false
 
 const axiosInstance = axios.create({
@@ -34,6 +38,10 @@ Vue.prototype.$lodash = {
 }
 Vue.prototype.$axios = axiosInstance
 Vue.prototype.$moment = moment
+
+// global components register
+Vue.component('LineDiagram', LineDiagram)
+Vue.component('FilterGroupSelect', FilterGroupSelect)
 
 new Vue({
   router,

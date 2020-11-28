@@ -26,7 +26,7 @@
                 v-for="(item, index) in availableOes"
                 :key="index"
                 @click="$refs.oesMenu.save(item)"
-                :disabled="!item.status"
+                :disabled="item.disabled"
               >
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item>
@@ -82,13 +82,19 @@
       <v-row>
         <v-col cols="12" md="9">
           <v-row>
-            <v-col cols="12" md="4" v-for="(item, i) in Array(2)" :key="i" >
+            <v-col cols="12" md="4">
               <FilterGroupSelect name="Отрасли" :items="availableIndustries" color="primary" v-model="filters.industries" />
+            </v-col>
+            <v-col cols="12" md="4">
+              <FilterGroupSelect name="Экономические показатели" :items="availableEconomics" color="secondary" v-model="filters.economics" />
+            </v-col>
+            <v-col cols="12" md="4">
+              <FilterGroupSelect name="Неэкономические показатели" :items="availableFeatures" color="warning" v-model="filters.features" />
             </v-col>
           </v-row>
           <v-row>
             <v-col>
-              <LineDiagram class="pa-3 rounded-lg shadow shadow-primary border-primary bg-white" />
+              <LineDiagram class="pa-3 rounded-lg shadow shadow-primary border-primary bg-white" :edit="true" />
             </v-col>
           </v-row>
         </v-col>
@@ -140,16 +146,12 @@
   </div>
 </template>
 <script>
-import LineDiagram from '@/components/diagrams/LineDiagram.vue'
 import MiniGraph from '@/components/MiniGraph.vue'
-import FilterGroupSelect from '@/components/FilterGroupSelect.vue'
 import { mapState } from 'vuex'
 
 export default {
   components: {
-    LineDiagram,
-    MiniGraph,
-    FilterGroupSelect
+    MiniGraph
   },
   data () {
     return {
@@ -157,22 +159,37 @@ export default {
         {
           title: 'ОЭС Урала',
           value: 'ural',
-          status: true
+          disabled: false
         },
         {
           title: 'ОЭС Юга',
           value: 'south',
-          status: false
+          disabled: true
         },
         {
           title: 'ОЭС Востока',
           value: 'east',
-          status: false
+          disabled: true
         },
         {
           title: 'ОЭС Центра',
           value: 'center',
-          status: false
+          disabled: true
+        },
+        {
+          title: 'ОЭС Северо-Запада',
+          value: 'nord-west',
+          disabled: true
+        },
+        {
+          title: 'ОЭС Сибири',
+          value: 'sibir',
+          disabled: true
+        },
+        {
+          title: 'ОЭС Средней Волги',
+          value: 'mid-volga',
+          disabled: true
         }
       ],
       availableIndustries: [
@@ -183,6 +200,26 @@ export default {
         {
           title: 'Металлургия',
           color: 'green'
+        }
+      ],
+      availableEconomics: [
+        {
+          title: 'Инвестиции',
+          color: 'investment'
+        },
+        {
+          title: 'ВРП',
+          color: 'vrp'
+        }
+      ],
+      availableFeatures: [
+        {
+          title: 'Освещённость',
+          color: 'luminous'
+        },
+        {
+          title: 'Температура',
+          color: 'temperature'
         }
       ]
     }
@@ -201,6 +238,10 @@ export default {
   created () {
     // initial filters
     if (!this.filters.oes?.value) this.$set(this.filters, 'oes', this.availableOes[0])
+
+    // dates
+    if (!this.filters.dateEnd) this.$set(this.filters, 'dateEnd', this.$moment().format('YYYY-MM-DD'))
+    if (!this.filters.dateStart) this.$set(this.filters, 'dateStart', this.$moment().subtract(1, 'M').format('YYYY-MM-DD'))
   },
   methods: {
 

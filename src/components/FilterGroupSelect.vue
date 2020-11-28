@@ -1,6 +1,6 @@
 <template>
   <div
-    class="pa-3 rounded-lg shadow-primary border-primary bg-white"
+    class="pa-3 rounded-lg shadow-primary bg-white"
     :class="{[`border-${color}`]: true}"
   >
     <v-select
@@ -12,10 +12,13 @@
       item-text="title"
       outlined
       dense
+      :item-color="color"
       hide-details="auto"
-      prepend-inner-icon="mdi-magnify"
-      persistent-hint
-    ></v-select>
+    >
+      <template v-slot:selection="{ index }">
+        <span v-if="index === 0" >Выбрано: {{ selected.length }}</span>
+      </template>
+    </v-select>
     <v-chip-group
       column
     >
@@ -24,6 +27,7 @@
         :key="ii"
         label
         close
+        @click:close="() => selected = selected.filter((el) => el !== v)"
         :color="color"
       >
         {{ v.title }}
@@ -47,6 +51,11 @@ export default {
       get () {
         return this.value
       }
+    }
+  },
+  methods: {
+    del (el) {
+      console.log(el)
     }
   }
 }

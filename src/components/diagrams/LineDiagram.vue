@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="12" sm="9">
+      <v-col cols="12" sm="8" lg="9">
         <Lines
           ref="line"
           style="position:relative;"
@@ -11,12 +11,15 @@
           class=""
         />
       </v-col>
-      <v-col cols="12" sm="3" class="d-flex flex-column justify-start">
+      <v-col cols="12" sm="4" lg="3" class="d-flex flex-column justify-start">
         <div class="title">Показать/скрыть</div>
         <v-checkbox
-          label="Label 1"
+          v-for="(item, i) in chartData.datasets" :key="i"
+          :label="item.label"
+          :value="item.name"
+          v-model="showedDatasets"
         ></v-checkbox>
-        <v-btn color="primary" outlined>
+        <v-btn v-if="edit" color="primary" outlined @click="customize = !customize">
           <v-icon
             left
             dark
@@ -27,29 +30,28 @@
         </v-btn>
       </v-col>
     </v-row>
+    <v-dialog
+      v-model="customize"
+      :width="'100%'"
+      :fullscreen="$vuetify.breakpoint.smAndDown"
+    >
+      <Customize :open.sync="customize" />
+    </v-dialog>
   </div>
 </template>
 <script>
 import Lines from '@/components/charts/Lines.vue'
+import Customize from '@/components/Customize.vue'
 import { mapState } from 'vuex'
 
 export default {
   components: {
-    Lines
+    Lines,
+    Customize
   },
   props: {
-    method: Number
-  },
-  watch: {
-    filters: {
-      immediate: true,
-      deep: true,
-      handler (val, old) {
-        if (!old || val.dateStart !== old.dateStart || val.dateEnd !== old.dateEnd) {
-          this.getData()
-        }
-      }
-    }
+    method: Number,
+    edit: Boolean
   },
   data () {
     return {
@@ -71,29 +73,54 @@ export default {
           ]
         }
       },
-      step: null
+      step: null,
+      customize: false,
+      availableDatasets: {
+        electroenergy: 'Энергопотребление'
+      },
+      showedDatasets: []
     }
   },
   computed: {
-    ...mapState(['filters']),
+    ...mapState(['filters', 'energy']),
     chartData () {
       return {
-        labels: this.apiData.map((el) => el.date),
+        labels: (this.energy || []).map((el) => el.date),
         datasets: [
           {
-            label: 'Porteblenie',
+            label: this.availableDatasets.electroenergy,
+            name: 'electroenergy',
             backgroundColor: 'transparent',
             borderColor: this.$vuetify.theme.themes.light.secondary,
             pointBorderColor: 'transparent',
-            data: this.apiData.map((el) => el.value),
-            type: 'line'
+            data: (this.energy || []).map((el) => el.value),
+            type: 'line',
+            showLine: this.showedDatasets.includes('electroenergy')
           }
         ]
       }
     }
   },
+  watch: {
+    'filters.dateStart': {
+      handler (val) {
+        this.getData()
+      }
+    },
+    'filters.dateEnd': {
+      handler (val) {
+        this.getData()
+      }
+    }
+  },
+  created () {
+    if (this.energy) {
+      !this.showedDatasets.includes('electroenergy') && this.showedDatasets.push('electroenergy')
+    } else this.getData()
+  },
   methods: {
     async getData () {
+      let data = []
       const url = `${process.env.VUE_APP_API_SERVER}/api/data/getprediction`
       const params = {
         startDate: this.filters.dateStart,
@@ -103,11 +130,24 @@ export default {
       const res = await this.$axios.get(url, { params })
       console.log(res)
 
+      try {
+        data = res.data.x.map((x, i) => ({
+          date: x,
+          value: res.data.y[i]
+        }))
+        !this.showedDatasets.includes('electroenergy') && this.showedDatasets.push('electroenergy')
+      } catch (error) {
+        console.log(error)
+      }
+
       // load dummy data
-      this.apiData = [...Array(12)].map((v, i) => ({
-        date: `01-${(0 + (i + 1).toString()).slice(-2)}-2020`,
-        value: Math.ceil(Math.random() * 200)
-      }))
+      // data = [...Array(12)].map((v, i) => ({
+      //   date: `01-${(0 + (i + 1).toString()).slice(-2)}-2020`,
+      //   value: Math.ceil(Math.random() * 200)
+      // }))
+
+      // store data
+      this.$store.commit('SET_ENERGY', data)
     }
   }
 }
