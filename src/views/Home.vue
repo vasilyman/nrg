@@ -21,9 +21,10 @@
                   column
                 >
                   <v-chip
-                    v-for="(v, ii) in Array(5)"
+                    v-for="(v, ii) in Array(3)"
                     :key="ii"
                     label
+                    close
                     :color="i === 0 ? 'primary' : 'success'"
                   >
                     Tag {{ ii }}
@@ -60,17 +61,85 @@
       </v-row>
       <div class="text-h4 font-weight-bold mt-6 mb-3">Потребление электроэнергии</div>
       <v-row>
-        <v-col></v-col>
+        <v-col v-for="(item, i) in Array(3)" :key="i" >
+          <div class="white pa-3 rounded-lg shadow shadow-primary mb-6">
+            <div class="d-flex">
+              <div class="flex-grow-1">
+                <div class="title">Потребление</div>
+                <div class="caption secondary--text">Последние просмотренные регионы</div>
+              </div>
+              <v-select
+                class="flex-grow-0 secondary--text"
+                color="secondary"
+                outlined
+                dense
+                label="Территории"
+              ></v-select>
+            </div>
+            <v-chip-group
+              active-class="primary--text"
+              column
+            >
+              <v-chip
+                v-for="(v, ii) in Array(3)"
+                :key="ii"
+                label
+                :color="'secondary'"
+                close
+              >
+                Tag {{ ii }}
+              </v-chip>
+            </v-chip-group>
+            <DonutPie />
+          </div>
+        </v-col>
+      </v-row>
+      <div class="text-h4 font-weight-bold mt-6 mb-3">Производство электроэнергии</div>
+      <v-row>
+        <v-col v-for="(item, i) in Array(3)" :key="i" >
+          <div class="white pa-3 rounded-lg shadow shadow-primary mb-6">
+            <div class="d-flex">
+              <div class="flex-grow-1">
+                <div class="title">Производство</div>
+                <div class="caption secondary--text">Последние просмотренные регионы</div>
+              </div>
+              <v-select
+                class="flex-grow-0 secondary--text"
+                color="secondary"
+                outlined
+                dense
+                label="Территории"
+              ></v-select>
+            </div>
+            <v-chip-group
+              active-class="primary--text"
+              column
+            >
+              <v-chip
+                v-for="(v, ii) in Array(3)"
+                :key="ii"
+                label
+                :color="'secondary'"
+                close
+              >
+                Tag {{ ii }}
+              </v-chip>
+            </v-chip-group>
+            <DonutPie />
+          </div>
+        </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
 <script>
 import LineDiagram from '@/components/diagrams/LineDiagram.vue'
+import DonutPie from '@/components/diagrams/DonutPie.vue'
 
 export default {
   components: {
-    LineDiagram
+    LineDiagram,
+    DonutPie
   }
 }
 </script>
