@@ -47,14 +47,14 @@
                 <span class="text-h3">{{ total }}</span> <span>млн.Квт*час</span>
               </div>
             </v-col>
-            <v-col cols="12" md="auto">
+            <v-col cols="12" md="auto" class="">
               <div class="subtitle">Изменение за период:</div>
-              <div>
+              <div class="">
                 <span
                   class="text-h3"
                   :class="{
                     'success--text': indx > 0,
-                    'error--text': indx > 0
+                    'error--text': indx <= 0
                   }"
                 >{{indx > 0 ? '+' : '-'}}{{Math.abs(indx)}}</span> <span>%</span>
               </div>
@@ -133,9 +133,15 @@ export default {
       }
     }
   },
+  watch: {
+    allFilters: {
+      handler () {
+        this.customFilters = [...this.allFilters]
+      }
+    }
+  },
   created () {
     this.stat = this.availableStats[0]
-    this.customFilters = [...this.allFilters]
   }
 }
 </script>

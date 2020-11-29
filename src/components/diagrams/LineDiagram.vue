@@ -46,6 +46,7 @@
       v-model="customize"
       :width="'100%'"
       :fullscreen="$vuetify.breakpoint.smAndDown"
+      scrollable
     >
       <Customize :open.sync="customize" />
     </v-dialog>
@@ -104,11 +105,25 @@ export default {
             label: this.availableDatasets.electroenergy,
             name: 'electroenergy',
             backgroundColor: 'transparent',
-            borderColor: this.$vuetify.theme.themes.light.secondary,
+            borderColor: this.$vuetify.theme.themes.light.success,
             // pointBorderColor: 'transparent',
             data: (this.energy || []).map((el) => el.value),
             type: 'line',
             showLine: this.showedDatasets.includes('electroenergy')
+          },
+          {
+            label: 'Сегодня',
+            backgroundColor: this.$vuetify.theme.themes.light.secondary,
+            borderColor: this.$vuetify.theme.themes.light.secondary,
+            // pointBorderColor: 'transparent',
+            data: (this.energy || []).map((el) => {
+              const max = Math.max(...this.energy.map((el) => el.value))
+              let val = null
+              if (this.$moment(el.date).format('DD-MM-YYYY') === this.$moment().format('DD-MM-YYYY')) val = max
+              return val
+            }),
+            barThickness: 3,
+            type: 'bar'
           }
         ]
       }
@@ -117,14 +132,14 @@ export default {
   watch: {
     'filters.dateStart': {
       handler (val) {
-        this.getData()
         this.calcStep()
+        this.getData()
       }
     },
     'filters.dateEnd': {
       handler (val) {
-        this.getData()
         this.calcStep()
+        this.getData()
       }
     },
     step: {
@@ -178,7 +193,6 @@ export default {
     calcStep () {
       let step = null
       if (this.filters.dateStart && this.filters.dateEnd) {
-        console.log('rrrr')
         if (Math.abs(this.$moment(this.filters.dateStart).diff(this.$moment(this.filters.dateEnd), 'months')) > 11) {
           step = 'mounth'
         }

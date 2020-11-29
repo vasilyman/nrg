@@ -6,7 +6,7 @@
     class="shadow-primary"
   >
     <v-app-bar-nav-icon @click="$emit('update:drawer', !drawer)"></v-app-bar-nav-icon>
-
+    <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom></v-progress-linear>
     <div class="fill-height d-flex align-center mr-4">
       <v-img contain max-height="100%" src="@/assets/logo.png"></v-img>
       <div class="">
@@ -33,11 +33,15 @@
   </v-app-bar>
 </template>
 <script>
+import { mapState } from 'vuex'
 export default {
   props: {
     drawer: Boolean,
     menu: Array,
     show: Boolean
+  },
+  computed: {
+    ...mapState(['loading'])
   }
 }
 </script>

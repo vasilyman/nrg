@@ -138,19 +138,29 @@
           </div>
         </v-col>
       </v-row>
-      <div class="text-h4 font-weight-bold mt-6 mb-3">Потребление электроэнергии</div>
+      <div class="text-h4 font-weight-bold mt-6 mb-3">Экономические показатели</div>
       <v-row>
         <v-col>
-          <MiniGraph type="bars" />
+          <MiniGraph
+            type="bars"
+            title="Температура воздуха"
+            subtitle="в регионе"
+            :dataSet=temperatureSmall
+          />
         </v-col>
         <v-col>
           <MiniGraph type="bars" />
         </v-col>
         <v-col>
-          <MiniGraph type="horizontal-bars" />
+          <MiniGraph
+            type="horizontal-bars"
+            title="Коэффициенты корелляции"
+            subtitle="факторы для прогноза"
+            :dataSet="Object.entries(corellation).map(([date, value]) => ({ date: mapFeat[date], value })).sort((a, b) => b.value - a.value)"
+          />
         </v-col>
       </v-row>
-      <div class="text-h4 font-weight-bold mt-6 mb-3">Производство электроэнергии</div>
+      <div class="text-h4 font-weight-bold mt-6 mb-3">Неэкономические показатели</div>
       <v-row>
         <v-col>
           <MiniGraph type="bars" />
@@ -175,6 +185,8 @@ export default {
   },
   data () {
     return {
+      tempApi: '/api/data/GetWeather',
+      //
       availableOes: [
         {
           title: 'ОЭС Урала',
@@ -241,14 +253,31 @@ export default {
           title: 'Температура',
           color: 'temperature'
         }
-      ]
+      ],
+      corellation: {
+        temp: 1.0,
+        foodprice: 0.0060233219967535745,
+        sale: 0.0013977712738945324,
+        night_minutes: 0.8904449120968831,
+        covid: 0.09484649644344838,
+        holidays: 0.034676430122137655,
+        salary_arrears: 0.017900551935658086
+      },
+      mapFeat: {
+        temp: 'Температура',
+        foodprice: 'ИПЦ',
+        sale: 'Розничные продажи',
+        night_minutes: 'Продолж. темн. вр.сут.',
+        covid: 'Режим смоизоляции',
+        holidays: 'Празд и вых. дни',
+        salary_arrears: 'Задолженность по з.п.'
+      }
     }
   },
   computed: {
-    ...mapState([]),
+    ...mapState(['temperatureSmall', 'filters']),
     filters: {
       set (val) {
-        console.log(val, 'ffffff')
         this.$store.commit('SET_FILTERS', val)
       },
       get () {
@@ -263,9 +292,43 @@ export default {
     // dates
     if (!this.filters.dateEnd) this.$set(this.filters, 'dateEnd', this.$moment().format('YYYY-MM-DD'))
     if (!this.filters.dateStart) this.$set(this.filters, 'dateStart', this.$moment().subtract(1, 'M').format('YYYY-MM-DD'))
+
+    // call apis for small graphics
+    this.callApi('temperature')
   },
   methods: {
+    async callApi (type) {
+      let path = ''
+      let commit = ''
+      let data = null
+      switch (type) {
+        case 'temperature':
+          path = this.tempApi
+          commit = 'SET_TEMPERATURE_SMALL'
+          break
+        default:
+          break
+      }
+      const url = process.env.VUE_APP_API_SERVER + path
+      const params = {
+        startDate: this.filters.dateStart,
+        endDate: this.filters.dateEnd,
+        step: 'mounth'
+      }
+      const res = await this.$axios.get(url, { params })
+      console.log(res)
 
+      try {
+        data = res.data.x.map((x, i) => ({
+          date: x,
+          value: res.data.y[i]
+        }))
+      } catch (error) {
+        console.log(error)
+      }
+
+      this.$store.commit(commit, data)
+    }
   }
 }
 </script>

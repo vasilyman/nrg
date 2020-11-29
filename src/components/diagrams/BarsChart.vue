@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="12" :sm="horizontal ? 12 : 9">
+      <v-col cols="12" :sm="horizontal ? 12 : 8">
         <component :is="horizontal ? 'HorBars' : 'Bars'"
           ref="bar"
           style="position:relative;"
@@ -11,21 +11,16 @@
           class=""
         />
       </v-col>
-      <v-col v-if="!horizontal" cols="12" sm="auto">
-        <div class="">
-          <div class="title">Filter 1</div>
-          <v-checkbox
-            label="Label 1"
-          ></v-checkbox>
-          <v-btn block color="primary" outlined>
-            <v-icon
-              left
-              dark
-            >
-              mdi-tune
-            </v-icon>
-            Apply
-          </v-btn>
+      <v-col v-if="!horizontal" cols="12" :sm="horizontal ? 12 : 4">
+        <div class="pa-3 rounded-lg shadow shadow-primary">
+          <div class="title">Индекс</div>
+          <span
+            class="text-h5"
+            :class="{
+              'success--text': indx > 0,
+              'error--text': indx <= 0
+            }"
+          >{{indx > 0 ? '+' : '-'}}{{Math.abs(indx)}}</span> <span>%</span>
         </div>
       </v-col>
     </v-row>
@@ -42,11 +37,14 @@ export default {
   },
   props: {
     method: Number,
-    horizontal: Boolean
+    horizontal: Boolean,
+    dataSet: {
+      type: Array,
+      default: () => ([])
+    }
   },
   data () {
     return {
-      apiData: [],
       loading: false,
       options: {
         aspectRatio: 4 / 3,
@@ -68,29 +66,21 @@ export default {
   computed: {
     chartData () {
       return {
-        labels: this.apiData.map((el) => el.date),
+        labels: (this.dataSet || []).map((el) => el.date),
         datasets: [
           {
             label: 'Porteblenie',
             backgroundColor: this.$vuetify.theme.themes.light.secondary,
             borderColor: this.$vuetify.theme.themes.light.secondary,
-            data: this.apiData.map((el) => el.value),
+            data: (this.dataSet || []).map((el) => el.value),
             type: this.horizontal ? 'horizontalBar' : 'bar'
           }
         ]
       }
-    }
-  },
-  mounted () {
-    this.getData()
-  },
-  methods: {
-    getData () {
-      // load dummy data
-      this.apiData = [...Array(12)].map((v, i) => ({
-        date: `01-${(0 + (i + 1).toString()).slice(-2)}-2020`,
-        value: Math.ceil(Math.random() * 200)
-      }))
+    },
+    indx () {
+      const index = this.dataSet && this.dataSet.length > 0 ? this.dataSet.slice(-1)[0].value / this.dataSet[0].value : 0
+      return (Math.round(index * 1000 - 1000) / 10)
     }
   }
 }

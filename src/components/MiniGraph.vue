@@ -2,10 +2,11 @@
   <div class="pa-3 rounded-lg shadow shadow-primary border-primary bg-white mb-6">
     <div class="d-flex">
       <div class="flex-grow-1">
-        <div class="title">Производство</div>
-        <div class="caption secondary--text">Последние просмотренные регионы</div>
+        <div class="title">{{title}}</div>
+        <div class="caption secondary--text">{{subtitle}}</div>
       </div>
       <v-select
+        :items="items"
         class="flex-grow-0 secondary--text"
         color="secondary"
         outlined
@@ -13,21 +14,7 @@
         label="Территории"
       ></v-select>
     </div>
-    <v-chip-group
-      active-class="primary--text"
-      column
-    >
-      <v-chip
-        v-for="(v, ii) in Array(3)"
-        :key="ii"
-        label
-        :color="'secondary'"
-        close
-      >
-        Tag {{ ii }}
-      </v-chip>
-    </v-chip-group>
-    <component :is="graphType" :horizontal="horizontal" />
+    <component :is="graphType" :horizontal="horizontal" :dataSet="dataSet" />
   </div>
 </template>
 <script>
@@ -37,7 +24,11 @@ import DonutPie from '@/components/diagrams/DonutPie.vue'
 export default {
   props: {
     type: String,
-    dataSet: Object
+    dataSet: Array,
+    title: String,
+    subtitle: String,
+    value: Array,
+    items: Array
   },
   components: {
     DonutPie,
