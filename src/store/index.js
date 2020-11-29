@@ -30,10 +30,10 @@ export default new Vuex.Store({
       state.temperature = data
     },
     SET_COVID (state, data) {
-      state.temperature = data
+      state.covid = data
     },
     SET_DAYLIGHT (state, data) {
-      state.temperature = data
+      state.daylight = data
     }
   },
   actions: {

@@ -80,12 +80,17 @@ export default {
           display: false
         },
         scales: {
-          xAxes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => ({
-            gridLines: {
-              display: false
-            },
+          xAxes: [
+            {
+              gridLines: {
+                display: false
+              },
+              offset: false,
+              id: 0
+            }
+          ],
+          yAxes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => ({
             display: i === 0,
-            offset: false,
             id: i
           }))
         }
@@ -93,7 +98,15 @@ export default {
       customize: false,
       availableDatasets: {
         energy: 'Энергопотребление',
-        temperature: 'Температура'
+        temperature: 'Температура',
+        covid: 'COVID',
+        daylight: 'Продолж. светов. ночи'
+      },
+      colorDatasets: {
+        energy: this.$vuetify.theme.themes.light.primary,
+        temperature: this.$vuetify.theme.themes.light.success,
+        covid: this.$vuetify.theme.themes.light.error,
+        daylight: this.$vuetify.theme.themes.light.warning
       },
       showedDatasets: [],
       step: null,
@@ -102,14 +115,27 @@ export default {
   },
   computed: {
     ...mapState(['filters', 'energy', 'temperature', 'covid', 'daylight']),
+    selectedGraphics () {
+      let filters = []
+      for (const key in this.filters) {
+        if (!['dateStart', 'dateEnd', 'oes'].includes(key)) {
+          const el = this.filters[key]
+          filters.push(...el)
+        }
+      }
+      filters = filters.map((el) => el.name)
+      filters = filters.filter((el) => Object.keys(this.availableDatasets).includes(el))
+      filters.push('energy')
+      return filters
+    },
     chartData () {
-      const data = Object.keys(this.availableDatasets).filter((el) => {
+      const data = this.selectedGraphics.filter((el) => {
         return !!this[el]
       }).map((el, i) => ({
         label: this.availableDatasets[el],
         name: el,
         backgroundColor: 'transparent',
-        borderColor: this.$vuetify.theme.themes.light.success,
+        borderColor: this.colorDatasets[el],
         // pointBorderColor: 'transparent',
         data: (this[el] || []).map((e) => e.value),
         type: 'line',
@@ -161,6 +187,12 @@ export default {
       handler () {
         this.updData()
       }
+    },
+    selectedGraphics: {
+      handler (val, old) {
+        const type = this.$lodash.difference(val, old)[0]
+        if (type) this.getData(type)
+      }
     }
   },
   created () {
@@ -168,12 +200,12 @@ export default {
   },
   methods: {
     setShowedFilters () {
-      Object.keys(this.availableDatasets).forEach(type => {
+      this.selectedGraphics.forEach(type => {
         !this.showedDatasets.includes(type) && this.showedDatasets.push(type)
       })
     },
     updData () {
-      Object.keys(this.availableDatasets).forEach(type => {
+      this.selectedGraphics.forEach(type => {
         this.getData(type)
       })
     },

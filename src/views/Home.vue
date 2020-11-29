@@ -227,31 +227,42 @@ export default {
       availableIndustries: [
         {
           title: 'Нефтедобыча',
-          color: 'green'
+          color: 'green',
+          name: 'neft'
         },
         {
           title: 'Металлургия',
-          color: 'green'
+          color: 'green',
+          name: 'metallurgy'
         }
       ],
       availableEconomics: [
         {
           title: 'Инвестиции',
-          color: 'investment'
+          color: 'investment',
+          name: 'investment'
         },
         {
           title: 'ВРП',
-          color: 'vrp'
+          color: 'vrp',
+          name: 'vrp'
         }
       ],
       availableFeatures: [
         {
-          title: 'Освещённость',
-          color: 'luminous'
+          title: 'Продолж. светов. ночи.',
+          color: 'luminous',
+          name: 'daylight'
         },
         {
           title: 'Температура',
-          color: 'temperature'
+          color: 'temperature',
+          name: 'temperature'
+        },
+        {
+          title: 'COVID',
+          color: 'red',
+          name: 'covid'
         }
       ],
       corellation: {
@@ -285,6 +296,28 @@ export default {
       }
     }
   },
+  watch: {
+    'filters.dateStart': {
+      handler (val) {
+        this.updData()
+      }
+    },
+    'filters.dateEnd': {
+      handler (val) {
+        this.updData()
+      }
+    }
+    // step: {
+    //   handler () {
+    //     this.updData()
+    //   }
+    // },
+    // covidEnabled: {
+    //   handler () {
+    //     this.updData()
+    //   }
+    // }
+  },
   created () {
     // initial filters
     if (!this.filters.oes?.value) this.$set(this.filters, 'oes', this.availableOes[0])
@@ -294,9 +327,12 @@ export default {
     if (!this.filters.dateStart) this.$set(this.filters, 'dateStart', this.$moment().subtract(1, 'M').format('YYYY-MM-DD'))
 
     // call apis for small graphics
-    this.callApi('temperature')
+    this.updData()
   },
   methods: {
+    updData () {
+      this.callApi('temperature')
+    },
     async callApi (type) {
       let path = ''
       let commit = ''

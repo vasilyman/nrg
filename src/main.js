@@ -5,7 +5,8 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import {
-  merge
+  merge,
+  difference
 } from 'lodash'
 import moment from 'moment'
 import axios from 'axios'
@@ -56,7 +57,8 @@ moment.locale('ru')
 
 // prototype section
 Vue.prototype.$lodash = {
-  merge
+  merge,
+  difference
 }
 Vue.prototype.$axios = axiosInstance
 Vue.prototype.$moment = moment
