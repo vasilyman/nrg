@@ -14,7 +14,7 @@
       <v-col cols="12" sm="4" lg="3" class="d-flex flex-column justify-start">
         <div class="title">Показать/скрыть</div>
         <v-switch
-          v-model="covid"
+          v-model="covidEnabled"
           label="COVID"
           hide-details="auto"
         ></v-switch>
@@ -25,7 +25,7 @@
           label="Детализация день / месяц"
         ></v-switch>
         <v-checkbox
-          v-for="(item, i) in chartData.datasets" :key="i"
+          v-for="(item, i) in chartData.datasets.filter((el) => el.name !== 'today')" :key="i"
           :label="item.label"
           :value="item.name"
           v-model="showedDatasets"
@@ -68,6 +68,10 @@ export default {
   },
   data () {
     return {
+      energyPath: '/api/data/getprediction',
+      temperaturePath: '/api/data/GetWeather',
+      covidPath: '/api/data/GetCovid',
+      daylightPath: '/api/data/GetDaylight',
       apiData: [],
       loading: false,
       options: {
@@ -76,43 +80,49 @@ export default {
           display: false
         },
         scales: {
-          xAxes: [
-            {
-              gridLines: {
-                display: false
-              },
-              offset: false
-            }
-          ]
+          xAxes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => ({
+            gridLines: {
+              display: false
+            },
+            display: i === 0,
+            offset: false,
+            id: i
+          }))
         }
       },
       customize: false,
       availableDatasets: {
-        electroenergy: 'Энергопотребление'
+        energy: 'Энергопотребление',
+        temperature: 'Температура'
       },
       showedDatasets: [],
       step: null,
-      covid: true
+      covidEnabled: true
     }
   },
   computed: {
-    ...mapState(['filters', 'energy']),
+    ...mapState(['filters', 'energy', 'temperature', 'covid', 'daylight']),
     chartData () {
+      const data = Object.keys(this.availableDatasets).filter((el) => {
+        return !!this[el]
+      }).map((el, i) => ({
+        label: this.availableDatasets[el],
+        name: el,
+        backgroundColor: 'transparent',
+        borderColor: this.$vuetify.theme.themes.light.success,
+        // pointBorderColor: 'transparent',
+        data: (this[el] || []).map((e) => e.value),
+        type: 'line',
+        showLine: this.showedDatasets.includes(el),
+        yAxisID: i
+      }))
       return {
         labels: (this.energy || []).map((el) => el.date),
         datasets: [
-          {
-            label: this.availableDatasets.electroenergy,
-            name: 'electroenergy',
-            backgroundColor: 'transparent',
-            borderColor: this.$vuetify.theme.themes.light.success,
-            // pointBorderColor: 'transparent',
-            data: (this.energy || []).map((el) => el.value),
-            type: 'line',
-            showLine: this.showedDatasets.includes('electroenergy')
-          },
+          ...data,
           {
             label: 'Сегодня',
+            name: 'today',
             backgroundColor: this.$vuetify.theme.themes.light.secondary,
             borderColor: this.$vuetify.theme.themes.light.secondary,
             // pointBorderColor: 'transparent',
@@ -133,40 +143,91 @@ export default {
     'filters.dateStart': {
       handler (val) {
         this.calcStep()
-        this.getData()
+        this.updData()
       }
     },
     'filters.dateEnd': {
       handler (val) {
         this.calcStep()
-        this.getData()
+        this.updData()
       }
     },
     step: {
       handler () {
-        this.getData()
+        this.updData()
       }
     },
-    covid: {
+    covidEnabled: {
       handler () {
-        this.getData()
+        this.updData()
       }
     }
   },
   created () {
-    if (this.energy) {
-      !this.showedDatasets.includes('electroenergy') && this.showedDatasets.push('electroenergy')
-    } else this.getData()
+    this.updData()
   },
   methods: {
-    async getData () {
+    setShowedFilters () {
+      Object.keys(this.availableDatasets).forEach(type => {
+        !this.showedDatasets.includes(type) && this.showedDatasets.push(type)
+      })
+    },
+    updData () {
+      Object.keys(this.availableDatasets).forEach(type => {
+        this.getData(type)
+      })
+    },
+    updOptions () {
+      const max = Math.max(
+        ...(this.energy || []).map((el) => el.value),
+        ...(this.temperature || []).map((el) => el.value)
+      )
+      this.options = {
+        ...this.options,
+        scales: {
+          ...this.options.scales,
+          yAxes: [
+            {
+              ticks: {
+                // min,
+                max
+              }
+            }
+          ]
+        }
+      }
+    },
+    async getData (type) {
       let data = []
-      const url = `${process.env.VUE_APP_API_SERVER}/api/data/getprediction`
+      let path = ''
+      let commit = ''
+
+      switch (type) {
+        case 'energy':
+          path = this.energyPath
+          commit = 'SET_ENERGY'
+          break
+        case 'temperature':
+          path = this.temperaturePath
+          commit = 'SET_TEMPERATURE'
+          break
+        case 'covid':
+          path = this.covidPath
+          commit = 'SET_COVID'
+          break
+        case 'daylight':
+          path = this.daylightPath
+          commit = 'SET_DAYLIGHT'
+          break
+        default:
+          break
+      }
+      const url = process.env.VUE_APP_API_SERVER + path
       const params = {
         startDate: this.filters.dateStart,
         endDate: this.filters.dateEnd,
         step: this.step,
-        covidEnabled: this.covid
+        covidEnabled: this.covidEnabled
       }
       const res = await this.$axios.get(url, { params })
       console.log(res)
@@ -176,19 +237,16 @@ export default {
           date: x,
           value: res.data.y[i]
         }))
-        !this.showedDatasets.includes('electroenergy') && this.showedDatasets.push('electroenergy')
+        this.setShowedFilters()
+        // setTimeout(() => {
+        //   this.updOptions()
+        // }, 1000)
       } catch (error) {
         console.log(error)
       }
 
-      // load dummy data
-      // data = [...Array(12)].map((v, i) => ({
-      //   date: `01-${(0 + (i + 1).toString()).slice(-2)}-2020`,
-      //   value: Math.ceil(Math.random() * 200)
-      // }))
-
       // store data
-      this.$store.commit('SET_ENERGY', data)
+      this.$store.commit(commit, data)
     },
     calcStep () {
       let step = null

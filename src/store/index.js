@@ -8,7 +8,10 @@ export default new Vuex.Store({
     filters: {},
     energy: null,
     loading: false,
-    temperatureSmall: null
+    temperatureSmall: null,
+    temperature: null,
+    covid: null,
+    daylight: null
   },
   mutations: {
     SET_FILTERS (state, data) {
@@ -22,6 +25,15 @@ export default new Vuex.Store({
     },
     SET_TEMPERATURE_SMALL (state, data) {
       state.temperatureSmall = data
+    },
+    SET_TEMPERATURE (state, data) {
+      state.temperature = data
+    },
+    SET_COVID (state, data) {
+      state.temperature = data
+    },
+    SET_DAYLIGHT (state, data) {
+      state.temperature = data
     }
   },
   actions: {

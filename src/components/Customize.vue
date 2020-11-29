@@ -135,6 +135,7 @@ export default {
   },
   watch: {
     allFilters: {
+      immediate: true,
       handler () {
         this.customFilters = [...this.allFilters]
       }
