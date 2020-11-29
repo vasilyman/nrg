@@ -44,13 +44,19 @@
             <v-col cols="12" md="auto">
               <div class="subtitle">Всего за период:</div>
               <div>
-                <span class="text-h3">7 577 412.40</span> <span>млн.Квт*час</span>
+                <span class="text-h3">{{ total }}</span> <span>млн.Квт*час</span>
               </div>
             </v-col>
             <v-col cols="12" md="auto">
               <div class="subtitle">Изменение за период:</div>
               <div>
-                <span class="text-h3">+1.02</span> <span>%</span>
+                <span
+                  class="text-h3"
+                  :class="{
+                    'success--text': indx > 0,
+                    'error--text': indx > 0
+                  }"
+                >{{indx > 0 ? '+' : '-'}}{{Math.abs(indx)}}</span> <span>%</span>
               </div>
             </v-col>
           </v-row>
@@ -65,9 +71,26 @@
         <FilterGroupSelect name="Выбранные показатели" :items="availableFilters" color="primary" v-model="allFilters" />
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <div class="title">Регулируемые параметры</div>
+        <div class="d-flex">
+          <div v-for="(item, i) in customFilters" :key="i" style="min-width:16rem;">
+            <v-subheader class="pl-0">
+              {{ item.title }}
+            </v-subheader>
+            <v-slider
+              v-model="item.value"
+              thumb-label
+            ></v-slider>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
   </div>
 </template>
 <script>
+import { mapState } from 'vuex'
 export default {
   props: {
     open: Boolean,
@@ -81,21 +104,38 @@ export default {
           title: 'Электроэнергия',
           value: 'electroenergy'
         }
-      ]
+      ],
+      customFilters: []
     }
   },
   computed: {
+    ...mapState(['filters', 'energy']),
+    total () {
+      return Math.round(this.energy.map((el) => el.value).reduce((a, b) => a + b, 0))
+    },
+    indx () {
+      const index = this.energy && this.energy.length > 0 ? this.energy.slice(-1)[0].value / this.energy[0].value : 0
+      return (Math.round(index * 1000 - 1000) / 10)
+    },
     allFilters: {
       set (val) {
         //
       },
       get () {
-        return null
+        const filters = []
+        for (const key in this.filters) {
+          if (!['dateStart', 'dateEnd', 'oes'].includes(key)) {
+            const el = this.filters[key]
+            filters.push(...el)
+          }
+        }
+        return filters
       }
     }
   },
   created () {
     this.stat = this.availableStats[0]
+    this.customFilters = [...this.allFilters]
   }
 }
 </script>

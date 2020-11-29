@@ -13,13 +13,25 @@
       </v-col>
       <v-col cols="12" sm="4" lg="3" class="d-flex flex-column justify-start">
         <div class="title">Показать/скрыть</div>
+        <v-switch
+          v-model="covid"
+          label="COVID"
+          hide-details="auto"
+        ></v-switch>
+        <v-switch
+          value="mounth"
+          v-model="step"
+          hide-details="auto"
+          label="Детализация день / месяц"
+        ></v-switch>
         <v-checkbox
           v-for="(item, i) in chartData.datasets" :key="i"
           :label="item.label"
           :value="item.name"
           v-model="showedDatasets"
+          hide-details="auto"
         ></v-checkbox>
-        <v-btn v-if="edit" color="primary" outlined @click="customize = !customize">
+        <v-btn v-if="edit" color="primary" class="mt-4" outlined @click="customize = !customize">
           <v-icon
             left
             dark
@@ -73,12 +85,13 @@ export default {
           ]
         }
       },
-      step: null,
       customize: false,
       availableDatasets: {
         electroenergy: 'Энергопотребление'
       },
-      showedDatasets: []
+      showedDatasets: [],
+      step: null,
+      covid: true
     }
   },
   computed: {
@@ -92,7 +105,7 @@ export default {
             name: 'electroenergy',
             backgroundColor: 'transparent',
             borderColor: this.$vuetify.theme.themes.light.secondary,
-            pointBorderColor: 'transparent',
+            // pointBorderColor: 'transparent',
             data: (this.energy || []).map((el) => el.value),
             type: 'line',
             showLine: this.showedDatasets.includes('electroenergy')
@@ -105,10 +118,22 @@ export default {
     'filters.dateStart': {
       handler (val) {
         this.getData()
+        this.calcStep()
       }
     },
     'filters.dateEnd': {
       handler (val) {
+        this.getData()
+        this.calcStep()
+      }
+    },
+    step: {
+      handler () {
+        this.getData()
+      }
+    },
+    covid: {
+      handler () {
         this.getData()
       }
     }
@@ -125,7 +150,8 @@ export default {
       const params = {
         startDate: this.filters.dateStart,
         endDate: this.filters.dateEnd,
-        step: this.step
+        step: this.step,
+        covidEnabled: this.covid
       }
       const res = await this.$axios.get(url, { params })
       console.log(res)
@@ -148,6 +174,17 @@ export default {
 
       // store data
       this.$store.commit('SET_ENERGY', data)
+    },
+    calcStep () {
+      let step = null
+      if (this.filters.dateStart && this.filters.dateEnd) {
+        console.log('rrrr')
+        if (Math.abs(this.$moment(this.filters.dateStart).diff(this.$moment(this.filters.dateEnd), 'months')) > 11) {
+          step = 'mounth'
+        }
+      }
+      this.step = step
+      return step
     }
   }
 }
